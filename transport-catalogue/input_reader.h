@@ -2,8 +2,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
-
-#include "geo.h"
+#include <iostream>
 #include "transport_catalogue.h"
 
 struct CommandDescription {
@@ -25,6 +24,8 @@ public:
     void ParseLine(std::string_view line);
 
     void ApplyCommands(transport::TransportCatalogue& catalogue) const;
+
+    void Input(std::istream& in, transport::TransportCatalogue& catalogue);
 
 private:
     std::vector<CommandDescription> commands_;

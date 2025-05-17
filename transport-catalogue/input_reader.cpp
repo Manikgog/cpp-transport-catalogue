@@ -1,6 +1,5 @@
 #include "input_reader.h"
-
-#include <algorithm>
+#include "geo.h"
 #include <cassert>
 #include <iterator>
 
@@ -103,4 +102,16 @@ void InputReader::ApplyCommands(transport::TransportCatalogue& catalogue) const 
             catalogue.AddBus(cmd.id, stops, is_roundtrip);
         }
     }
+}
+
+void InputReader::Input(std::istream& in, transport::TransportCatalogue& catalogue) {
+    int base_request_count;
+    in >> base_request_count >> std::ws;
+    InputReader reader;
+    for (int i = 0; i < base_request_count; ++i) {
+        std::string line;
+        getline(in, line);
+        reader.ParseLine(line);
+    }
+    reader.ApplyCommands(catalogue);
 }

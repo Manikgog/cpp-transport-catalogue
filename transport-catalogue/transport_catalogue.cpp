@@ -1,6 +1,5 @@
 #include "transport_catalogue.h"
 #include <unordered_set>
-#include <iostream>
 
 namespace transport {
 
@@ -10,18 +9,15 @@ void TransportCatalogue::AddStop(std::string name, Coordinates coords) {
 }
 
 void TransportCatalogue::AddBus(std::string name, const std::vector<std::string_view>& stop_names, bool is_roundtrip) {
-    Bus bus;
-    bus.name = std::move(name);
-    bus.is_roundtrip = is_roundtrip;
-
+    buses_.push_back({std::move(name), {}, is_roundtrip});
+    Bus& bus = buses_.back();
     for (const auto& stop_name : stop_names) {
         if (auto it = stop_name_to_stop_.find(stop_name); it != stop_name_to_stop_.end()) {
             bus.stops.push_back(it->second);
+            stop_name_to_buses_[it->first].insert(&bus);
         }
     }
-
-    buses_.push_back(std::move(bus));
-    bus_name_to_bus_[buses_.back().name] = &buses_.back();
+    bus_name_to_bus_[bus.name] = &bus;
 }
 
 const Stop* TransportCatalogue::FindStop(std::string_view name) const {
@@ -44,15 +40,12 @@ const std::optional<std::set<std::string> > TransportCatalogue::GetBusesByStopNa
         return std::nullopt;
     }
     std::set<std::string> buses_on_stop;
-    for(const auto& bus : buses_) {
-        for(const auto& s : bus.stops) {
-            if(s->name == name) {
-                buses_on_stop.insert(bus.name);
-                break;
-            }
+    if (auto it = stop_name_to_buses_.find(stop->name); it != stop_name_to_buses_.end()) {
+        for (const auto& bus : it->second) {
+            buses_on_stop.insert(std::string(bus->name));
         }
     }
-    return {buses_on_stop};
+    return buses_on_stop;
 }
 
 std::optional<TransportCatalogue::BusInfo> TransportCatalogue::GetBusInfo(std::string_view name) const {

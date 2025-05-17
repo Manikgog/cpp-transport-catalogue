@@ -41,3 +41,13 @@ void ParseAndPrintStat(const transport::TransportCatalogue& catalogue, std::stri
         return;
     }
 }
+
+void InputStat(std::istream& in, transport::TransportCatalogue& catalogue) {
+    int stat_request_count;
+    in >> stat_request_count >> std::ws;
+    for (int i = 0; i < stat_request_count; ++i) {
+        std::string line;
+        getline(in, line);
+        ParseAndPrintStat(catalogue, line, std::cout);
+    }
+}
