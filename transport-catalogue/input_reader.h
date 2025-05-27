@@ -5,6 +5,8 @@
 #include <iostream>
 #include "transport_catalogue.h"
 
+struct Stop;
+
 struct CommandDescription {
     explicit operator bool() const {
         return !command.empty();
@@ -18,6 +20,8 @@ struct CommandDescription {
     std::string id;           // id маршрута или остановки
     std::string description;  // Параметры команды
 };
+
+
 
 class InputReader {
 public:

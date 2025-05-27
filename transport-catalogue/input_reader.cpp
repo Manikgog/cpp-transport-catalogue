@@ -1,5 +1,6 @@
 #include "input_reader.h"
 #include "geo.h"
+#include "transport_catalogue.h"
 #include <cassert>
 #include <iterator>
 
@@ -27,6 +28,48 @@ std::string_view Trim(std::string_view string) {
         return {};
     }
     return string.substr(start, string.find_last_not_of(' ') + 1 - start);
+}
+
+void ParseDistances(const std::string_view from_stop_name, std::string_view str, transport::TransportCatalogue& catalogue) {
+    size_t comma_pos = str.find(',');
+    if (comma_pos == str.npos) {
+        return;
+    }
+    comma_pos = str.find(',', comma_pos + 1);
+    if (comma_pos == str.npos) {
+        return;
+    }
+    size_t distances_start = str.find_first_not_of(' ', comma_pos + 1);
+    if (distances_start == str.npos) {
+        return;
+    }
+    size_t pos = distances_start;
+    while (pos < str.size()) {
+        size_t m_pos = str.find("m to", pos);
+        if (m_pos == str.npos) {
+            break;
+        }
+        std::string_view dist_str = str.substr(pos, m_pos - pos);
+        dist_str = Trim(dist_str);
+        int distance = std::stoi(std::string(dist_str));
+        size_t stop_start = m_pos + 4;
+        size_t stop_end = str.find(',', stop_start);
+        if (stop_end == str.npos) {
+            stop_end = str.size();
+        }
+
+        std::string_view to_stop_name = str.substr(stop_start, stop_end - stop_start);
+        to_stop_name = Trim(to_stop_name);
+        const auto* from_stop = catalogue.FindStop(from_stop_name);
+        const auto* to_stop = catalogue.FindStop(to_stop_name);
+        if (from_stop && to_stop) {
+            catalogue.AddDistance(from_stop, to_stop, distance);
+        }
+        pos = stop_end;
+        if (pos != str.npos && str[pos] == ',') {
+            pos++;
+        }
+    }
 }
 
 std::vector<std::string_view> Split(std::string_view string, char delim) {
@@ -92,6 +135,12 @@ void InputReader::ApplyCommands(transport::TransportCatalogue& catalogue) const 
         if (cmd.command == "Stop") {
             auto coords = ParseCoordinates(cmd.description);
             catalogue.AddStop(cmd.id, coords);
+        }
+    }
+
+    for (const auto& cmd : commands_) {
+        if (cmd.command == "Stop") {
+            ParseDistances(cmd.id, cmd.description, catalogue);
         }
     }
 

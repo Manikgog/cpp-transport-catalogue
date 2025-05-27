@@ -16,7 +16,8 @@ void ParseAndPrintStat(const transport::TransportCatalogue& catalogue, std::stri
 
         output << info->stops_count << " stops on route, "
                << info->unique_stops << " unique stops, "
-               << std::setprecision(6) << info->route_length << " route length\n";
+               << std::setprecision(6) << info->route_length << " route length, "
+               << std::setprecision(6) << info->curvature << " curvature\n";
         return;
     }
 
@@ -29,12 +30,12 @@ void ParseAndPrintStat(const transport::TransportCatalogue& catalogue, std::stri
             output << "not found\n";
             return;
         }
-        if(info.has_value() && info.value().empty()) {
+        if(info.has_value() && info.value()->empty()) {
             output << "no buses\n";
             return;
         }
         output << "buses ";
-        for(const auto& stop : info.value()) {
+        for(const auto & stop : *info.value()) {
             output << stop << " ";
         }
         output << "\n";
