@@ -14,10 +14,8 @@ namespace renderer {
         double line_width_ = 0;
         double stop_radius_ = 0;
         int bus_label_font_size_ = 0;
-        //std::vector<double> bus_label_offset_{};
         svg::Point bus_label_offset_{};
         int stop_label_font_size_ = 0;
-        //std::vector<double> stop_label_offset_{};
         svg::Point stop_label_offset_{};
         svg::Color underlayer_color_{};
         double underlayer_width_ = 0;
