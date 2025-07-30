@@ -1,5 +1,7 @@
 #pragma once
 
+#include "domain.h"
+#include "graph.h"
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -7,9 +9,11 @@
 #include <deque>
 #include <optional>
 #include <vector>
-
+#include <memory>
+#include "router.h"
 #include "transport_router.h"
-#include "domain.h"
+
+
 
 namespace transport {
     class TransportRouter;
@@ -45,8 +49,8 @@ namespace transport {
         const std::deque<Stop>& GetStops() const;
         const std::deque<Bus>& GetBuses() const;
         std::optional<int> GetDistance(const Stop *lhs, const Stop *rhs) const;
-        void SetRoutingSettings(int bus_wait_time, double bus_velocity) const;
-        void BuildRouter() const;
+        void SetRoutingSettings(int bus_wait_time, double bus_velocity);
+        void BuildRouter();
         std::optional<RouteInfo> FindRoute(const std::string& from, const std::string& to) const;
 
     private:

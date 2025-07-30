@@ -1,6 +1,6 @@
-#include <unordered_set>
-
 #include "transport_catalogue.h"
+#include <unordered_set>
+#include <iostream>
 
 namespace transport {
 
@@ -8,7 +8,9 @@ namespace transport {
     : router_(new TransportRouter()) {}
 
     TransportCatalogue::~TransportCatalogue() {
-        delete router_;
+        if (router_) {
+            delete router_;
+        }
         router_ = nullptr;
     }
 
@@ -141,11 +143,11 @@ namespace transport {
         return std::optional<RouteInfo>(router_->FindRoute(from, to));
     }
 
-    void TransportCatalogue::SetRoutingSettings(int bus_wait_time, double bus_velocity) const {
+    void TransportCatalogue::SetRoutingSettings(int bus_wait_time, double bus_velocity) {
         router_->SetRoutingSettings(bus_wait_time, bus_velocity);
     }
 
-    void TransportCatalogue::BuildRouter() const {
+    void TransportCatalogue::BuildRouter() {
         router_->BuildGraph(*this);
     }
 }

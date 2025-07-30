@@ -47,8 +47,9 @@ void transport::TransportRouter::BuildGraph(const transport::TransportCatalogue&
                     if (!dist) dist = catalogue.GetDistance(stops[k+1], stops[k]);
                     if (dist) total_distance += *dist;
                 }
-
-                double time = total_distance / (routing_settings_.bus_velocity * 1000 / 60); // км/ч → м/мин
+                const int meters_to_km = 1000;
+                const int seconds_to_min = 60;
+                double time = total_distance / (routing_settings_.bus_velocity * meters_to_km / seconds_to_min); // км/ч → м/мин
 
                 // Добавляем ребро от вершины посадки 'from' до вершины ожидания 'to'
                 graph::VertexId from = stop_to_bus_vertex_.at(from_stop);
@@ -65,7 +66,7 @@ void transport::TransportRouter::BuildGraph(const transport::TransportCatalogue&
                         if (dist) reverse_distance += *dist;
                     }
 
-                    double reverse_time = reverse_distance / (routing_settings_.bus_velocity * 1000 / 60);
+                    double reverse_time = reverse_distance / (routing_settings_.bus_velocity * meters_to_km / seconds_to_min);
                     graph::VertexId reverse_from = stop_to_bus_vertex_.at(to_stop);
                     graph::VertexId reverse_to = stop_to_wait_vertex_.at(from_stop);
                     graph::EdgeId reverse_edge_id = graph_->AddEdge({reverse_from, reverse_to, reverse_time});

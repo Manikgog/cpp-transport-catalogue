@@ -83,7 +83,7 @@ renderer::RenderSettings JsonReader::ParseRenderSettings() const {
     return settings;
 }
 
-void JsonReader::ParseRoutingSettings(const TransportCatalogue &catalogue) const {
+void JsonReader::ParseRoutingSettings(transport::TransportCatalogue &catalogue) const {
     const auto& root_map = document_.GetRoot().AsDict();
     if (const auto it = root_map.find("routing_settings"); it != root_map.end()) {
         const auto& map = it->second.AsDict();
