@@ -1,12 +1,21 @@
 #include "transport_catalogue.h"
-
 #include <unordered_set>
 #include <iostream>
 
 namespace transport {
 
+    TransportCatalogue::TransportCatalogue()
+    : router_(new TransportRouter()) {}
+
+    TransportCatalogue::~TransportCatalogue() {
+        if (router_) {
+            delete router_;
+        }
+        router_ = nullptr;
+    }
+
     void TransportCatalogue::AddStop(std::string name, geo::Coordinates coords) {
-        stops_.push_back({ std::move(name), coords });
+        stops_.push_back({name, coords});
         stop_name_to_stop_[stops_.back().name] = &stops_.back();
     }
 
@@ -42,7 +51,7 @@ namespace transport {
         if (!stop) {
             return std::nullopt;
         }
-        if (!stop_name_to_buses_.count(name)) {
+        if (!stop_name_to_buses_.contains(name)) {
             return &empty_buses_set_;
         }
         return { &stop_name_to_buses_.at(name) };
@@ -109,8 +118,36 @@ namespace transport {
         return bus_names;
     }
 
+    const std::deque<Stop>& TransportCatalogue::GetStops() const {
+        return stops_;
+    }
+
+    const std::deque<Bus> & TransportCatalogue::GetBuses() const {
+        return buses_;
+    }
+
+    std::optional<int> TransportCatalogue::GetDistance(const Stop *lhs, const Stop *rhs) const {
+        std::pair<const Stop*, const Stop*> key({lhs, rhs});
+        if (this->distances_between_stops_.contains(key)) {
+            return {this->distances_between_stops_.at(key)};
+        }
+        return {};
+    }
+
     void TransportCatalogue::AddDistance(const Stop* from, const Stop* to, int distance) {
         distances_between_stops_[std::make_pair(const_cast<Stop*>(from), const_cast<Stop*>(to))] = distance;
     }
 
+    std::optional<RouteInfo> TransportCatalogue::FindRoute(
+    const std::string& from, const std::string& to) const {
+        return std::optional<RouteInfo>(router_->FindRoute(from, to));
+    }
+
+    void TransportCatalogue::SetRoutingSettings(int bus_wait_time, double bus_velocity) {
+        router_->SetRoutingSettings(bus_wait_time, bus_velocity);
+    }
+
+    void TransportCatalogue::BuildRouter() {
+        router_->BuildGraph(*this);
+    }
 }

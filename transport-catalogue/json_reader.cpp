@@ -1,10 +1,13 @@
 #include "json_reader.h"
 #include "json_builder.h"
+#include "graph.h"
 
 #include <algorithm>
 #include <string>
 #include <iterator>
 #include <iostream>
+
+#include "router.h"
 
 namespace transport {
 
@@ -78,6 +81,14 @@ renderer::RenderSettings JsonReader::ParseRenderSettings() const {
         }
     }
     return settings;
+}
+
+void JsonReader::ParseRoutingSettings(transport::TransportCatalogue &catalogue) const {
+    const auto& root_map = document_.GetRoot().AsDict();
+    if (const auto it = root_map.find("routing_settings"); it != root_map.end()) {
+        const auto& map = it->second.AsDict();
+        catalogue.SetRoutingSettings(map.at("bus_wait_time").AsInt(), map.at("bus_velocity").AsDouble());
+    }
 }
 
 void JsonReader::BaseRequestsProcessing(TransportCatalogue &catalogue) const {
@@ -182,6 +193,42 @@ void JsonReader::StatRequestsProcessing(TransportCatalogue &catalogue) const {
                 .Key("request_id").Value(id)
                 .Key("map").Value(oss.str())
                 .EndDict();
+            }
+            else if (type == "Route") {
+                const std::string from = item_map.at("from").AsString();
+                const std::string to = item_map.at("to").AsString();
+
+                builder.StartDict().Key("request_id").Value(id);
+
+                if (auto route_info = catalogue.FindRoute(from, to)) {
+                    builder.Key("total_time").Value(route_info->total_time)
+                          .Key("items").StartArray();
+
+                    for (const auto& item : route_info->items) {
+                        if (std::holds_alternative<std::pair<std::string, double>>(item)) {
+                            const auto& wait_item = std::get<std::pair<std::string, double>>(item);
+                            builder.StartDict()
+                                  .Key("type").Value("Wait")
+                                  .Key("stop_name").Value(wait_item.first)
+                                  .Key("time").Value(wait_item.second)
+                                  .EndDict();
+                        } else {
+                            const auto& bus_item = std::get<std::tuple<std::string, std::string, int, double>>(item);
+                            builder.StartDict()
+                                  .Key("type").Value("Bus")
+                                  .Key("bus").Value(std::get<0>(bus_item))
+                                  .Key("span_count").Value(std::get<2>(bus_item))
+                                  .Key("time").Value(std::get<3>(bus_item))
+                                  .EndDict();
+                        }
+                    }
+
+                    builder.EndArray();
+                } else {
+                    builder.Key("error_message").Value("not found");
+                }
+
+                builder.EndDict();
             }
         }
 

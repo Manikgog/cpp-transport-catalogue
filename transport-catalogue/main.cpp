@@ -17,5 +17,11 @@ int main() {
     jsonReader.Input(std::cin);
 
     jsonReader.BaseRequestsProcessing(transportCatalogue);
+    jsonReader.ParseRoutingSettings(transportCatalogue);
+    renderer::RenderSettings render_settings = jsonReader.ParseRenderSettings();
+    renderer::MapRenderer renderer;
+    renderer.SetSettings(render_settings);
+    svg::Document doc = renderer.RenderMap(transportCatalogue);
+    transportCatalogue.BuildRouter();
     jsonReader.StatRequestsProcessing(transportCatalogue);
 }

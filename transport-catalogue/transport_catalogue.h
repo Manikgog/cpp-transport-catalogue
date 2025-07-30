@@ -1,6 +1,7 @@
 #pragma once
 
 #include "domain.h"
+#include "graph.h"
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -8,8 +9,15 @@
 #include <deque>
 #include <optional>
 #include <vector>
+#include <memory>
+#include "router.h"
+#include "transport_router.h"
+
+
 
 namespace transport {
+    class TransportRouter;
+    struct RouteInfo;
 
     using stops_map = std::unordered_map<std::string_view, const Stop*>;
     using buses_map = std::unordered_map<std::string_view, const Bus *>;
@@ -19,6 +27,9 @@ namespace transport {
 
     class TransportCatalogue {
     public:
+        TransportCatalogue();
+        ~TransportCatalogue();
+
         struct BusInfo {
             size_t stops_count = 0;
             size_t unique_stops = 0;
@@ -35,6 +46,12 @@ namespace transport {
         [[nodiscard]] std::optional<set_names> GetBusesByStopName(std::string_view) const;
         [[nodiscard]] std::optional<BusInfo> GetBusInfo(std::string_view) const;
         [[nodiscard]] std::set<std::string_view> GetBusNames() const;
+        const std::deque<Stop>& GetStops() const;
+        const std::deque<Bus>& GetBuses() const;
+        std::optional<int> GetDistance(const Stop *lhs, const Stop *rhs) const;
+        void SetRoutingSettings(int bus_wait_time, double bus_velocity);
+        void BuildRouter();
+        std::optional<RouteInfo> FindRoute(const std::string& from, const std::string& to) const;
 
     private:
         std::deque<Stop> stops_;
@@ -44,5 +61,6 @@ namespace transport {
         buses_names_on_stop_map stop_name_to_buses_;
         std::set<std::string_view> empty_buses_set_;
         map_distances distances_between_stops_;
+        TransportRouter* router_;
     };
 }
