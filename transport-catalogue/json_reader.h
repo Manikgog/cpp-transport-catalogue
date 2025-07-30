@@ -13,7 +13,7 @@ namespace transport {
         void BaseRequestsProcessing(transport::TransportCatalogue& catalogue) const;
         void StatRequestsProcessing(transport::TransportCatalogue& catalogue) const;
         [[nodiscard]] renderer::RenderSettings ParseRenderSettings() const;
-        void ParseRoutingSettings(transport::TransportCatalogue& catalogue) const;
+        void ParseRoutingSettings(const transport::TransportCatalogue& catalogue) const;
 
     private:
         json::Document document_;

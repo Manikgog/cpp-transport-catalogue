@@ -11,16 +11,14 @@
 #include "transport_catalogue.h"
 
 namespace transport {
-    class TransportCatalogue;
-}
 
-namespace transport {
+    class TransportCatalogue;
 
     struct RouteInfo {
         double total_time;
         std::vector<std::variant<
-            std::pair<std::string, double>, // Wait: stop_name, time
-            std::tuple<std::string, std::string, int, double> // Bus: bus_name, from_stop, span_count, time
+            std::pair<std::string, double>, // Ожидание на остановке: название остановки, время
+            std::tuple<std::string, std::string, int, double> // Маршрут: название маршрута, от остановки, до остановки, время
         >> items;
 
         RouteInfo() = default;
@@ -34,8 +32,8 @@ namespace transport {
         };
 
         void SetRoutingSettings(int bus_wait_time, double bus_velocity);
-        void BuildGraph(const transport::TransportCatalogue& catalogue);
-        std::optional<transport::RouteInfo> FindRoute(const std::string& from, const std::string& to) const;
+        void BuildGraph(const TransportCatalogue& catalogue);
+        std::optional<RouteInfo> FindRoute(const std::string& from, const std::string& to) const;
 
     private:
         RoutingSettings routing_settings_;
